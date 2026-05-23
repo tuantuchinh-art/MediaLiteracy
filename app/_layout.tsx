@@ -18,6 +18,7 @@ export default function RootLayout() {
             <Stack.Screen name="video-learning" options={{ headerShown: false, animation: 'slide_from_right' }} />
             <Stack.Screen name="daily-challenge" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
             <Stack.Screen name="premium" options={{ headerShown: false, animation: 'slide_from_bottom', presentation: 'modal' }} />
+            <Stack.Screen name="pvp-battle" options={{ headerShown: false, animation: 'slide_from_bottom' }} />
           </Stack>
         </GameProvider>
       </SafeAreaProvider>

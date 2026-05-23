@@ -36,12 +36,12 @@ const MODES = [
     id: 'pvp',
     title: 'PvP 1v1',
     subtitle: 'Player vs Player',
-    desc: 'Đấu trực tiếp với người khác. Ai phân loại đúng nhiều hơn sẽ thắng.',
+    desc: 'Đấu trực tiếp với người khác. Ai đúng nhiều hơn trong 60s sẽ thắng — XP ×2!',
     icon: '🥊',
     color: Colors.neonPink,
-    xp: '200-500 XP',
-    time: '3 phút',
-    badge: 'PvP',
+    xp: '200-500 XP (×2)',
+    time: '60 giây',
+    badge: 'LIVE PvP',
   },
   {
     id: 'daily',
@@ -96,7 +96,7 @@ export default function BattleScreen() {
         <Text style={styles.sectionTitle}>Chọn Chế Độ</Text>
         <View style={styles.modesGrid}>
           {MODES.map(mode => (
-            <Pressable key={mode.id} onPress={() => router.push('/battle-game')} style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1, transform: pressed ? [{ scale: 0.98 }] : [] }]}>
+            <Pressable key={mode.id} onPress={() => router.push(mode.id === 'pvp' ? '/pvp-battle' : '/battle-game')} style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1, transform: pressed ? [{ scale: 0.98 }] : [] }]}>
               <CyberCard glowColor={mode.color} style={styles.modeCard}>
                 <View style={styles.modeTop}>
                   <View style={styles.modeLeft}>
