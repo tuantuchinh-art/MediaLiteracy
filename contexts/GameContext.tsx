@@ -29,6 +29,8 @@ export interface GameContextType {
   recordAnswer: (correct: boolean) => void;
   recordPvPWin: () => void;
   recordInvestigation: () => void;
+  resetProgress: () => void;
+  setUsername: (name: string) => void;
   // Achievement check callback — set by AchievementContext bridge
   onStateChange?: (state: GameState, extra?: Record<string, boolean>) => void;
   setAchievementCallback: (cb: (state: GameState, extra?: Record<string, boolean>) => void) => void;
@@ -151,12 +153,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const resetProgress = useCallback(() => {
+    const fresh: GameState = {
+      xp: 0, level: 1, streak: 0, coins: 0, rank: 'Đồng',
+      username: 'Bạn', isPremium: false,
+      dailyChallengeCompleted: false,
+      totalCorrect: 0, totalAnswered: 0,
+      comboStreak: 0, maxCombo: 0,
+      pvpWins: 0, investigationsCompleted: 0, dailyChallengesCompleted: 0,
+    };
+    setGameState(fresh);
+  }, []);
+
+  const setUsername = useCallback((name: string) => {
+    setGameState(prev => ({ ...prev, username: name }));
+  }, []);
+
   return (
     <GameContext.Provider value={{
       gameState,
       addXP, addCombo, resetCombo,
       markChallengeComplete, upgradeToPremium, recordAnswer,
       recordPvPWin, recordInvestigation,
+      resetProgress, setUsername,
       setAchievementCallback,
     }}>
       {children}

@@ -18,6 +18,7 @@ const MENU_ITEMS = [
   { icon: '🏆', label: 'Bảng Xếp Hạng', route: '/leaderboard', color: Colors.neonGold },
   { icon: '📅', label: 'Thử Thách Hàng Ngày', route: '/daily-challenge', color: Colors.neonOrange },
   { icon: '⭐', label: 'Nâng Cấp Premium', route: '/premium', color: Colors.neonGold },
+  { icon: '⚙️', label: 'Cài Đặt', route: '/settings', color: Colors.neonCyan },
 ];
 
 export default function ProfileScreen() {
