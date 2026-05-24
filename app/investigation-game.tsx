@@ -38,10 +38,15 @@ export default function InvestigationGameScreen() {
     );
   };
 
+  const { recordInvestigation } = useGame();
+
   const submitVerdict = () => {
     if (!verdict) return;
     const isCorrect = verdict === caseData.verdict;
-    if (isCorrect) addXP(caseData.xpReward);
+    if (isCorrect) {
+      addXP(caseData.xpReward);
+      recordInvestigation();
+    }
     setShowResult(true);
   };
 

@@ -6,22 +6,16 @@ import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, FontWeight, Radii } from '@/constants/theme';
 import { useGame } from '@/hooks/useGame';
+import { useAchievements } from '@/hooks/useAchievements';
+import { ACHIEVEMENTS } from '@/constants/achievements';
 import CyberCard from '@/components/ui/CyberCard';
 import XPBar from '@/components/ui/XPBar';
 import NeonButton from '@/components/ui/NeonButton';
 
-const BADGES = [
-  { icon: '🔍', label: 'Thám Tử', earned: true },
-  { icon: '🎣', label: 'Anti-Clickbait', earned: true },
-  { icon: '🔥', label: '7 Ngày', earned: true },
-  { icon: '🏆', label: 'Top 100', earned: false },
-  { icon: '💎', label: 'Diamond', earned: false },
-  { icon: '🤖', label: 'AI Hunter', earned: false },
-];
-
 const MENU_ITEMS = [
+  { icon: '🏅', label: 'Huy Hiệu & Thành Tích', route: '/achievements', color: Colors.neonGold },
   { icon: '📹', label: 'Video Học Tập', route: '/video-learning', color: Colors.neonPink },
-  { icon: '🏅', label: 'Bảng Xếp Hạng', route: '/leaderboard', color: Colors.neonGold },
+  { icon: '🏆', label: 'Bảng Xếp Hạng', route: '/leaderboard', color: Colors.neonGold },
   { icon: '📅', label: 'Thử Thách Hàng Ngày', route: '/daily-challenge', color: Colors.neonOrange },
   { icon: '⭐', label: 'Nâng Cấp Premium', route: '/premium', color: Colors.neonGold },
 ];
@@ -30,15 +24,22 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { gameState } = useGame();
+  const { unlockedIds } = useAchievements();
 
   const accuracy = gameState.totalAnswered > 0
     ? Math.round((gameState.totalCorrect / gameState.totalAnswered) * 100)
     : 0;
 
+  const totalAchievements = ACHIEVEMENTS.length;
+  const unlockedCount     = unlockedIds.size;
+
+  // Show 6 most recent/unlocked achievements as preview
+  const previewBadges = ACHIEVEMENTS.slice(0, 6);
+
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        
+
         {/* Profile Hero */}
         <CyberCard glowColor={Colors.neonCyan} style={styles.profileCard}>
           <View style={styles.avatarRow}>
@@ -70,10 +71,10 @@ export default function ProfileScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           {[
-            { val: gameState.totalCorrect, label: 'Đúng', color: Colors.neonGreen, icon: '🎯' },
-            { val: `${accuracy}%`, label: 'Chính Xác', color: Colors.neonCyan, icon: '📊' },
-            { val: gameState.streak, label: 'Streak', color: Colors.neonGold, icon: '🔥' },
-            { val: gameState.maxCombo, label: 'Best Combo', color: Colors.neonPink, icon: '⚡' },
+            { val: gameState.totalCorrect, label: 'Đúng',       color: Colors.neonGreen, icon: '🎯' },
+            { val: `${accuracy}%`,         label: 'Chính Xác',  color: Colors.neonCyan,  icon: '📊' },
+            { val: gameState.streak,       label: 'Streak',     color: Colors.neonGold,  icon: '🔥' },
+            { val: gameState.maxCombo,     label: 'Best Combo', color: Colors.neonPink,  icon: '⚡' },
           ].map((stat, i) => (
             <View key={i} style={[styles.statCard, { borderColor: stat.color + '40', backgroundColor: stat.color + '12' }]}>
               <Text style={styles.statIcon}>{stat.icon}</Text>
@@ -83,19 +84,54 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Badges */}
-        <Text style={styles.sectionTitle}>Huy Hiệu</Text>
-        <CyberCard style={styles.badgesCard}>
-          <View style={styles.badgesRow}>
-            {BADGES.map(badge => (
-              <View key={badge.label} style={[styles.badgeItem, !badge.earned && styles.badgeLocked]}>
-                <Text style={styles.badgeIcon}>{badge.icon}</Text>
-                <Text style={styles.badgeLabel}>{badge.label}</Text>
-                {!badge.earned && <View style={styles.badgeLockOverlay}><Text style={styles.badgeLockText}>🔒</Text></View>}
+        {/* Achievement Preview Card */}
+        <Pressable onPress={() => router.push('/achievements')}>
+          <CyberCard glowColor={Colors.neonGold} style={styles.achieveCard}>
+            <View style={styles.achieveTop}>
+              <View>
+                <Text style={styles.achieveTitle}>🏅 Huy Hiệu</Text>
+                <Text style={styles.achieveCount}>
+                  <Text style={{ color: Colors.neonGold, fontWeight: FontWeight.black }}>{unlockedCount}</Text>
+                  <Text style={{ color: Colors.textMuted }}>/{totalAchievements} đã mở</Text>
+                </Text>
               </View>
-            ))}
-          </View>
-        </CyberCard>
+              <View style={styles.achieveRight}>
+                {/* Progress ring approximation */}
+                <View style={styles.progressRing}>
+                  <Text style={styles.progressRingText}>{Math.round((unlockedCount / totalAchievements) * 100)}%</Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={20} color={Colors.neonGold} />
+              </View>
+            </View>
+
+            {/* Progress bar */}
+            <View style={styles.achieveBarBg}>
+              <View style={[styles.achieveBarFill, { width: `${Math.round((unlockedCount / totalAchievements) * 100)}%` }]} />
+            </View>
+
+            {/* Badge preview row */}
+            <View style={styles.badgePreviewRow}>
+              {previewBadges.map(badge => {
+                const isUnlocked = unlockedIds.has(badge.id);
+                return (
+                  <View key={badge.id} style={[styles.badgePreviewItem, !isUnlocked && { opacity: 0.28 }]}>
+                    <View style={[
+                      styles.badgePreviewCircle,
+                      { borderColor: isUnlocked ? badge.rarityColor + '70' : Colors.border, backgroundColor: isUnlocked ? badge.rarityColor + '15' : Colors.bgPanel }
+                    ]}>
+                      <Text style={styles.badgePreviewIcon}>{isUnlocked ? badge.icon : '🔒'}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+              <Pressable onPress={() => router.push('/achievements')}>
+                <View style={styles.badgeMoreBtn}>
+                  <Text style={styles.badgeMoreText}>+{totalAchievements - 6}</Text>
+                </View>
+              </Pressable>
+            </View>
+          </CyberCard>
+        </Pressable>
 
         {/* Premium CTA */}
         {!gameState.isPremium && (
@@ -117,12 +153,21 @@ export default function ProfileScreen() {
             <Pressable
               key={item.label}
               onPress={() => router.push(item.route as any)}
-              style={({ pressed }) => [styles.menuItem, { opacity: pressed ? 0.7 : 1 }, i < MENU_ITEMS.length - 1 && styles.menuDivider]}
+              style={({ pressed }) => [
+                styles.menuItem,
+                { opacity: pressed ? 0.7 : 1 },
+                i < MENU_ITEMS.length - 1 && styles.menuDivider,
+              ]}
             >
               <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>
                 <Text style={styles.menuIconText}>{item.icon}</Text>
               </View>
               <Text style={styles.menuLabel}>{item.label}</Text>
+              {item.route === '/achievements' && (
+                <View style={styles.menuBadge}>
+                  <Text style={styles.menuBadgeText}>{unlockedCount}/{totalAchievements}</Text>
+                </View>
+              )}
               <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
             </Pressable>
           ))}
@@ -137,6 +182,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.bg },
   scroll: { paddingHorizontal: Spacing.base },
+
   profileCard: { padding: Spacing.base, marginVertical: Spacing.base, gap: Spacing.md },
   avatarRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   avatarWrap: { position: 'relative' },
@@ -167,16 +213,35 @@ const styles = StyleSheet.create({
   statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.black },
   statLabel: { fontSize: FontSize.xs, color: Colors.textMuted },
 
-  sectionTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginBottom: Spacing.sm, marginTop: Spacing.sm },
+  // Achievement card
+  achieveCard: { padding: Spacing.base, marginBottom: Spacing.sm, gap: Spacing.md },
+  achieveTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  achieveTitle: { fontSize: FontSize.md, fontWeight: FontWeight.black, color: Colors.neonGold },
+  achieveCount: { fontSize: FontSize.sm, marginTop: 2 },
+  achieveRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  progressRing: {
+    width: 44, height: 44, borderRadius: 22, borderWidth: 2,
+    borderColor: Colors.neonGold + '60', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: Colors.neonGold + '12',
+  },
+  progressRingText: { fontSize: FontSize.xs, fontWeight: FontWeight.black, color: Colors.neonGold },
+  achieveBarBg: { height: 6, backgroundColor: Colors.bgPanel, borderRadius: Radii.full, overflow: 'hidden' },
+  achieveBarFill: { height: '100%', backgroundColor: Colors.neonGold, borderRadius: Radii.full },
+  badgePreviewRow: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'center' },
+  badgePreviewItem: {},
+  badgePreviewCircle: {
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1.5,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  badgePreviewIcon: { fontSize: 20 },
+  badgeMoreBtn: {
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1,
+    borderColor: Colors.border, backgroundColor: Colors.bgPanel,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  badgeMoreText: { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: FontWeight.bold },
 
-  badgesCard: { padding: Spacing.base, marginBottom: Spacing.sm },
-  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, justifyContent: 'space-around' },
-  badgeItem: { alignItems: 'center', gap: 4, width: 72, position: 'relative' },
-  badgeLocked: { opacity: 0.4 },
-  badgeIcon: { fontSize: 32 },
-  badgeLabel: { fontSize: FontSize.xs, color: Colors.textSecondary, textAlign: 'center' },
-  badgeLockOverlay: { position: 'absolute', top: 4, right: 10 },
-  badgeLockText: { fontSize: 12 },
+  sectionTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginBottom: Spacing.sm, marginTop: Spacing.sm },
 
   premiumCard: { padding: Spacing.base, marginBottom: Spacing.sm },
   premiumContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.md },
@@ -189,4 +254,10 @@ const styles = StyleSheet.create({
   menuIcon: { width: 40, height: 40, borderRadius: Radii.md, justifyContent: 'center', alignItems: 'center' },
   menuIconText: { fontSize: 20 },
   menuLabel: { flex: 1, fontSize: FontSize.base, color: Colors.textPrimary, fontWeight: FontWeight.medium },
+  menuBadge: {
+    backgroundColor: Colors.neonGold + '20', borderRadius: Radii.full,
+    borderWidth: 1, borderColor: Colors.neonGold + '50',
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
+  menuBadgeText: { fontSize: FontSize.xs, color: Colors.neonGold, fontWeight: FontWeight.black },
 });

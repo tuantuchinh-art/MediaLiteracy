@@ -9,6 +9,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, FontWeight, Radii } from '@/constants/theme';
 import { BATTLE_POSTS } from '@/constants/gameData';
 import { useGame } from '@/hooks/useGame';
+import { useAchievements } from '@/hooks/useAchievements';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BATTLE_DURATION = 60;
@@ -358,15 +359,17 @@ function ResultPhase({ opponent, myScore, oppScore, myCorrect, oppCorrect, onRep
   myCorrect: number; oppCorrect: number;
   onReplay: () => void; onExit: () => void;
 }) {
-  const { addXP } = useGame();
+  const { addXP, recordPvPWin } = useGame();
   const won = myScore >= oppScore;
   const xpGained = won ? myCorrect * 100 : myCorrect * 50;
+  const isPerfect = won && oppCorrect === 0;
 
   const crownScale = useRef(new Animated.Value(0)).current;
   const cardSlide  = useRef(new Animated.Value(60)).current;
 
   useEffect(() => {
     addXP(xpGained);
+    if (won) recordPvPWin();
     Animated.parallel([
       Animated.spring(crownScale, { toValue: 1, friction: 5, useNativeDriver: true }),
       Animated.spring(cardSlide,  { toValue: 0, friction: 7, useNativeDriver: true }),
