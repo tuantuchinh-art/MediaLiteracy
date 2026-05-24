@@ -1,10 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable,
   Animated, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ONBOARDING_KEY } from '@/app/onboarding';
 import { Image } from 'expo-image';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, FontWeight, Radii } from '@/constants/theme';
@@ -20,6 +22,13 @@ export default function HomeScreen() {
   const router = useRouter();
   const { gameState } = useGame();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  // Show onboarding on first launch
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_KEY).then(val => {
+      if (!val) router.replace('/onboarding');
+    });
+  }, []);
 
   const accuracy = gameState.totalAnswered > 0
     ? Math.round((gameState.totalCorrect / gameState.totalAnswered) * 100)

@@ -25,6 +25,7 @@ export default function RootLayout() {
               <Stack.Screen name="premium"           options={{ headerShown: false, animation: 'slide_from_bottom', presentation: 'modal' }} />
               <Stack.Screen name="pvp-battle"        options={{ headerShown: false, animation: 'slide_from_bottom' }} />
               <Stack.Screen name="achievements"      options={{ headerShown: false, animation: 'slide_from_right' }} />
+              <Stack.Screen name="onboarding"        options={{ headerShown: false, animation: 'fade', gestureEnabled: false }} />
             </Stack>
           </AchievementProvider>
         </GameProvider>
